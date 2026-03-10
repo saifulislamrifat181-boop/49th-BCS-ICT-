@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>49th BCS Preliminary Exam (ICT)</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0f1c;
+  --surface: #131929;
+  --surface2: #1a2336;
+  --border: #1f2e46;
+  --accent: #4f8ef7;
+  --accent2: #7c3aed;
+  --green: #10b981;
+  --red: #f04f5a;
+  --yellow: #f59e0b;
+  --text: #dde3f0;
+  --muted: #5a6a85;
+  --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(79,142,247,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,142,247,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* HEADER */
+header {
+  position: relative;
+  z-index: 10;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11,15,28,0.92);
+  backdrop-filter: blur(12px);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--accent);
+}
+.logo span { color: var(--text); }
+.header-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  padding: 4px 11px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex; align-items: center; gap: 5px;
+}
+.badge .lbl { color: var(--muted); }
+.badge .val { color: var(--text); font-weight: 500; }
+.badge .val.g { color: var(--green); }
+.badge .val.r { color: var(--red); }
+.restart-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.restart-btn:hover { background: rgba(240,79,90,0.1); border-color: rgba(240,79,90,0.35); color: var(--red); }
+
+/* PROGRESS */
+.progress-row {
+  position: relative; z-index: 5;
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(11,15,28,0.7);
+  border-bottom: 1px solid var(--border);
+}
+.prog-track { flex:1; height:5px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+.prog-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius:99px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+.prog-label { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted); white-space:nowrap; }
+
+/* DOTS */
+.dots-row {
+  position:relative; z-index:5;
+  padding: 8px 24px;
+  display:flex; flex-wrap:wrap; gap:5px;
+  background: rgba(11,15,28,0.5);
+  border-bottom: 1px solid var(--border);
+}
+.dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s; flex-shrink:0;
+}
+.dot.current { background:var(--accent); border-color:var(--accent); transform:scale(1.35); }
+.dot.correct { background:var(--green); border-color:var(--green); }
+.dot.wrong   { background:var(--red);   border-color:var(--red); }
+
+/* MAIN */
+main {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 28px 16px 48px;
+  position:relative; z-index:2;
+}
+
+/* CARD */
+.quiz-card {
+  width:100%; max-width:700px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  animation: fadeSlide 0.32s ease;
+  box-shadow: 0 20px 56px rgba(0,0,0,0.45), 0 0 0 1px rgba(79,142,247,0.05);
+}
+@keyframes fadeSlide {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.card-top {
+  padding: 26px 26px 18px;
+  background: linear-gradient(135deg, var(--surface) 0%, #161f35 100%);
+  border-bottom: 1px solid var(--border);
+}
+.q-meta { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.q-num-tag {
+  font-family:'DM Mono',monospace; font-size:0.68rem;
+  color:var(--accent); background:rgba(79,142,247,0.1);
+  border:1px solid rgba(79,142,247,0.25); border-radius:6px;
+  padding:2px 9px;
+}
+.q-topic-tag {
+  font-size:0.67rem; color:var(--muted);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:6px; padding:2px 9px;
+}
+.q-text {
+  font-size:0.95rem; line-height:1.68;
+  color:var(--text); white-space:pre-line;
+}
+
+/* OPTIONS */
+.options { padding:18px 26px; display:flex; flex-direction:column; gap:9px; }
+.opt-btn {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 15px;
+  border-radius:10px; border:1.5px solid var(--border);
+  background:var(--surface2); cursor:pointer;
+  transition:all 0.17s; text-align:left; width:100%;
+  font-family:'DM Sans',sans-serif; font-size:0.86rem;
+  color:var(--text); position:relative; overflow:hidden;
+}
+.opt-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(79,142,247,0.07),transparent);
+  opacity:0; transition:opacity 0.17s;
+}
+.opt-btn:hover:not(:disabled)::before { opacity:1; }
+.opt-btn:hover:not(:disabled) { border-color:var(--accent); transform:translateX(3px); }
+.opt-btn:disabled { cursor:default; }
+.opt-key {
+  font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--muted);
+  width:27px; height:27px; border-radius:6px; border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-weight:500; background:rgba(255,255,255,0.03);
+  transition:all 0.17s;
+}
+.opt-btn:hover:not(:disabled) .opt-key { background:var(--accent); border-color:var(--accent); color:#fff; }
+.opt-btn.correct-opt { background:rgba(16,185,129,0.1); border-color:var(--green); color:var(--green); }
+.opt-btn.correct-opt .opt-key { background:var(--green); border-color:var(--green); color:#fff; }
+.opt-btn.wrong-opt   { background:rgba(240,79,90,0.08); border-color:var(--red); color:var(--red); }
+.opt-btn.wrong-opt   .opt-key { background:var(--red); border-color:var(--red); color:#fff; }
+
+/* VERDICT */
+.verdict-row { padding:0 26px 14px; display:none; }
+.verdict-box {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 15px; border-radius:10px;
+  font-size:0.83rem; font-weight:500;
+}
+.v-correct { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:var(--green); }
+.v-wrong   { background:rgba(240,79,90,0.08); border:1px solid rgba(240,79,90,0.25); color:var(--red); }
+.verdict-icon { font-size:1.05rem; }
+
+/* NAV */
+.card-nav {
+  padding:14px 26px 22px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.nav-btn {
+  font-family:'Syne',sans-serif; font-weight:700; font-size:0.83rem;
+  padding:10px 22px; border-radius:10px; border:none; cursor:pointer;
+  transition:all 0.2s; display:flex; align-items:center; gap:6px;
+}
+.btn-prev {
+  background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+}
+.btn-prev:hover:not(:disabled) { background:var(--surface); border-color:var(--accent); color:var(--text); }
+.btn-prev:disabled { opacity:0.3; cursor:default; }
+.btn-next {
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff; box-shadow:0 4px 18px rgba(79,142,247,0.28);
+}
+.btn-next:hover:not(:disabled) { opacity:0.87; transform:translateY(-1px); }
+.q-counter { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); text-align:center; }
+
+/* RESULTS */
+#results-screen {
+  display:none; width:100%; max-width:640px;
+  text-align:center; animation:fadeSlide 0.4s ease;
+}
+.result-glow {
+  width:110px; height:110px; margin:0 auto 22px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.6rem;
+  box-shadow:0 0 50px rgba(79,142,247,0.35),0 0 100px rgba(124,58,237,0.18);
+}
+.result-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.9rem; margin-bottom:6px; }
+.result-sub { color:var(--muted); font-size:0.87rem; margin-bottom:28px; }
+.result-score-big {
+  font-family:'Syne',sans-serif; font-weight:800; font-size:4rem;
+  color:var(--accent); line-height:1; margin-bottom:4px;
+}
+.result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:24px 0; }
+.result-stat {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:18px 10px;
+}
+.rs-val { font-family:'Syne',sans-serif; font-weight:700; font-size:1.7rem; margin-bottom:3px; }
+.rs-label { font-size:0.72rem; color:var(--muted); }
+.rs-val.g{color:var(--green);} .rs-val.r{color:var(--red);} .rs-val.y{color:var(--yellow);}
+.result-restart-btn {
+  font-family:'Syne',sans-serif; font-weight:700; font-size:0.93rem;
+  padding:13px 34px; border-radius:12px; border:none;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff; cursor:pointer;
+  box-shadow:0 4px 22px rgba(79,142,247,0.33);
+  transition:all 0.2s;
+}
+.result-restart-btn:hover { opacity:0.87; transform:translateY(-2px); }
+
+@media(max-width:520px){
+  .card-top{padding:18px 16px 14px;}
+  .options{padding:14px 16px;}
+  .card-nav{padding:12px 16px 18px;}
+  .verdict-row{padding:0 16px 12px;}
+  .dots-row{padding:7px 12px;}
+  .q-text{font-size:0.87rem;}
+  .result-grid{gap:8px;}
+  .rs-val{font-size:1.35rem;}
+  .result-score-big{font-size:3rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">49th BCS <span>· Preliminary Exam (ICT)</span></div>
+  <div class="header-right">
+    <div class="badge"><span class="lbl">Q</span><span class="val" id="hdr-q">1/100</span></div>
+    <div class="badge"><span class="lbl">✓</span><span class="val g" id="hdr-correct">0</span></div>
+    <div class="badge"><span class="lbl">✗</span><span class="val r" id="hdr-wrong">0</span></div>
+    <button class="restart-btn" onclick="confirmRestart()">↺ Restart</button>
+  </div>
+</header>
+
+<div class="progress-row">
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:1%"></div></div>
+  <div class="prog-label" id="prog-label">1 / 100</div>
+</div>
+
+<div class="dots-row" id="dots-row"></div>
+
+<main>
+  <div class="quiz-card" id="quiz-card">
+    <div class="card-top">
+      <div class="q-meta">
+        <div class="q-num-tag" id="q-num-tag">#101</div>
+        <div class="q-topic-tag" id="q-topic-tag">General</div>
+      </div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div class="options" id="options-container"></div>
+    <div class="verdict-row" id="verdict-row">
+      <div class="verdict-box" id="verdict-box">
+        <span class="verdict-icon" id="verdict-icon"></span>
+        <span id="verdict-msg"></span>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn btn-prev" id="btn-prev" onclick="goTo(currentIdx-1)">← Prev</button>
+      <div class="q-counter" id="q-counter">1 of 100</div>
+      <button class="nav-btn btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+
+  <div id="results-screen">
+    <div class="result-glow">🎯</div>
+    <div class="result-title">Quiz Complete!</div>
+    <div class="result-sub">49th BCS Preliminary Exam (ICT) — 100 Questions</div>
+    <div class="result-score-big" id="r-pct">0%</div>
+    <div class="result-grid">
+      <div class="result-stat"><div class="rs-val g" id="r-correct">0</div><div class="rs-label">Correct</div></div>
+      <div class="result-stat"><div class="rs-val r" id="r-wrong">0</div><div class="rs-label">Wrong</div></div>
+      <div class="result-stat"><div class="rs-val y" id="r-skip">0</div><div class="rs-label">Skipped</div></div>
+    </div>
+    <button class="result-restart-btn" onclick="restartQuiz()">↺ Try Again</button>
+  </div>
+</main>
+
+<script>
+const L = ['ক','খ','গ','ঘ'];
+
+const questions = [
+  {n:101,t:"Database",q:"Which one is not an ACID property?",o:["Authenticity","Consistency","Isolation","Durability"],a:0},
+  {n:102,t:"Networking",q:"Which of the following is a guided transmission medium?",o:["Radiowave","Microwave","Coaxial Cable","Infrared"],a:2},
+  {n:103,t:"C Programming",q:"In C, to retain the values of variables between function calls, we should use:",o:["auto","extern","static","register"],a:2},
+  {n:104,t:"OS",q:"Thrashing in memory management occurs when:",o:["Page size is too small","CPU utilization is very high","The system spends more time swapping pages than executing processes","Page table is too large"],a:2},
+  {n:105,t:"Networking",q:"_______ is used to store web addresses for future use?",o:["Routing","DNS resolution","Caching","ARP resolution"],a:2},
+  {n:106,t:"Networking",q:"Which one is false with respect to a VLAN?",o:["Provides a logical separation on Layer 2","Improves security","VLAN tag can distinguish traffic","Increases network management complexity"],a:3},
+  {n:107,t:"OS",q:"In virtual memory, TLB is used to:",o:["Store instructions","Control data transfers","Handle cache misses","Translate virtual address to physical address quickly"],a:3},
+  {n:108,t:"Networking",q:"A router processes packets @1 Gbps; if 10 packets (1200 bytes each) arrive at once, queuing delay for the 10th packet (in μs) is:",o:["96","86.4","115.2","120"],a:0},
+  {n:109,t:"AI / ML",q:"_______ method is a first order optimization method.",o:["Newton","Quasi-Newton","Gradient descent","Conjugate gradient"],a:2},
+  {n:110,t:"OS",q:"Which criterion is not mandatory for a solution of critical section problem?",o:["Mutual exclusion","Bounded waiting","Circular Waiting","Progress"],a:2},
+  {n:111,t:"Data Structures",q:"For a n-element min-Heap:",o:["The smallest element can be found anywhere in the heap","It is a type of binary search tree","Accessing an arbitrary element is an O(n) operation","The largest element is always at the root"],a:2},
+  {n:112,t:"Architecture",q:"Cache hit rate=80%; cache access time=5 ns; memory access time=50 ns. Effective access time (in ns):",o:["15","45","50","55"],a:3},
+  {n:113,t:"Algorithms",q:"What will be the time complexity of this algorithm?\nsum=0;\nfor(i=1; i<=n; i=i*2)\n  for(j=1; j<n; j++)\n    sum+=i*j;",o:["O(n)","O(log n)","O(n²)","O(n log n)"],a:3},
+  {n:114,t:"Compiler",q:"What output will be generated by the compiler after lexical and syntax analyses, respectively?",o:["Tokens and a parse tree","A parse tree and tokens","A Syntax tree and intermediate codes","Tokens and error messages"],a:0},
+  {n:115,t:"OOP",q:"Which one is a compile time polymorphism?",o:["Virtual function","Operator overloading","Function overriding","Dynamic binding"],a:1},
+  {n:116,t:"Discrete Math",q:"A relation R on a set B is an equivalence relation if it is:",o:["Reflexive and symmetric","Reflexive and transitive","Symmetric and transitive","Reflexive, symmetric and transitive"],a:3},
+  {n:117,t:"Networking",q:"_______ operates at the network layer and is used to connect different networks?",o:["Hub","Switch","Router","Repeater"],a:2},
+  {n:118,t:"Graph Theory",q:"The chromatic index of a bipartite graph with at least one edge is:",o:["1","2","3","4"],a:1},
+  {n:119,t:"C Programming",q:"Which loop is an exit-controlled loop?",o:["for loop","while loop","do while loop","None of the above"],a:2},
+  {n:120,t:"Architecture",q:"Hyper-threading:",o:["Creates multiple physical cores","Allows a single physical core to execute multiple threads simultaneously","Reduces cache size","Only applied to GPU"],a:1},
+  {n:121,t:"Data Structures",q:"For BFS of a graph, we should use:",o:["Queue","Stack","Priority queue","Deque"],a:0},
+  {n:122,t:"Software Engg",q:"In Agile, backlog refers to the list of:",o:["Completed tasks","Pending bugs","Features and tasks to be developed","Rejected requirements"],a:2},
+  {n:123,t:"OS",q:"_______ uses disk space as an extension of RAM.",o:["Caching","Virtual memory","Spooling","Buffer"],a:1},
+  {n:124,t:"Numerical",q:"Newton's backward interpolation formula is the most effective when:",o:["Interpolation point is near the beginning","Interpolation point is near the end","Data points are not equally spaced","Function is non-polynomial"],a:1},
+  {n:125,t:"Networking",q:"The address block 192.168.16.0/20 contains _______ IP Addresses.",o:["1024","4096","2048","65536"],a:1},
+  {n:126,t:"Algorithms",q:"In Huffman coding, the algorithm repeatedly picks two nodes and merges. These two nodes are:",o:["With the highest frequency","With the lowest frequency","One highest and one lowest frequency","Picked arbitrarily"],a:1},
+  {n:127,t:"Architecture",q:"Direct Memory Access allows:",o:["CPU to execute instructions while I/O transfers data directly to memory","Only CPU controlled data transfer","Memory to execute instructions independently","Reducing cache hits"],a:0},
+  {n:128,t:"Software Engg",q:"_______ testing is performed without knowledge of the internal implementation?",o:["White box","Black box","Unit","Integration"],a:1},
+  {n:129,t:"Architecture",q:"Which one is not an addressing mode?",o:["Immediate","Direct","Indirect","Sequential"],a:3},
+  {n:130,t:"OS",q:"Assuming P1, P2, P3 have burst time (ms) 6, 8, 3 respectively, which statement is true about SJF?",o:["Waiting time of P1 is 3 ms","Turn-around time of P3 is 9 ms","Waiting time for P2 is 6 ms","Turn-around time of P1 is 8 ms"],a:0},
+  {n:131,t:"Data Structures",q:"Using _______ order we can delete tree nodes so that a child node is deleted before its parents.",o:["Pre","Post","In","Level"],a:1},
+  {n:132,t:"Networking",q:"During a phone conversation, which mode of communication takes place?",o:["Simplex","Full-duplex","Half-duplex","Multiplex"],a:1},
+  {n:133,t:"Data Structures",q:"A priority queue is best-implemented using a:",o:["Stack","Linked list","Array","Heap"],a:3},
+  {n:134,t:"Networking",q:"Which protocol is used to send an email over the Internet?",o:["FTP","SMTP","HTTP","SNMP"],a:1},
+  {n:135,t:"C Programming",q:"What does the 'continue' statement do inside a loop?",o:["Exits the loop entirely","Terminates the program","Re-executes the loop twice","Skips the rest of the current iteration and moves to the next"],a:3},
+  {n:136,t:"Software Engg",q:"In Agile, Software is delivered:",o:["At the end of the project","In small incremental iterations","After complete documentation","Only when all features have been implemented"],a:1},
+  {n:137,t:"Architecture",q:"Intel 8086 (16 bit) microprocessor has a _______ bit address bus.",o:["8","16","20","32"],a:2},
+  {n:138,t:"OS",q:"OS System Calls perform the following basic operations on files:",o:["Read, Write, Delete","Write, Print, Reposition","Delete, Truncate, Sort data","Modify, update, sort data"],a:0},
+  {n:139,t:"Numerical",q:"The bisection method is used to:",o:["Find the eigenvalue of a matrix","Solve a system of linear equations","Find roots of non-linear equations","Perform numerical integration"],a:2},
+  {n:140,t:"Data Structures",q:"In an array-based complete binary tree, the index of the left child of a node at index i (zero-based) is:",o:["2i","2i + 1","i + 1","i - 1"],a:1},
+  {n:141,t:"Compiler",q:"Which optimization technique is NOT used for eliminating redundant codes?",o:["Dead code elimination","Partial redundancy elimination","Common subexpression elimination","Constant folding"],a:1},
+  {n:142,t:"Architecture",q:"Which register in a CPU points to the next instruction to be executed?",o:["Accumulator","Flags","SP","PC"],a:3},
+  {n:143,t:"Networking",q:"_______ Layer of the TCP/IP model is responsible for port binding.",o:["Application","Internet","Transport","Network"],a:2},
+  {n:144,t:"Digital Logic",q:"The main difference between a latch (L) and a flip flop (FF) is:",o:["FF is level-triggered, L is edge-triggered","FF is edge-triggered, L is level-triggered","FF cannot store data but L can","L can store more data than a FF"],a:1},
+  {n:145,t:"Compiler",q:"Which phase in compiler design performs data type checking?",o:["Lexical analysis","Syntax analysis","Semantic analysis","Code generation"],a:2},
+  {n:146,t:"Database",q:"Which one below is an example of a NoSQL database?",o:["MySQL","MongoDB","Oracle","PostgreSQL"],a:1},
+  {n:147,t:"Algorithms",q:"The space complexity of a recursive algorithm is mainly due to:",o:["Input size","Output size","Variables inside loops","Function call stack"],a:3},
+  {n:148,t:"Database",q:"What is the role of an index in a database?",o:["To store large binary objects","To store data integrity constraints","To boost the speed of data retrieval operations","To group related tables together"],a:2},
+  {n:149,t:"OS",q:"_______ is a non-preemptive algorithm.",o:["FCFS","Round Robin","Shortest Remaining Time","None of the above"],a:0},
+  {n:150,t:"Numerical",q:"Which one below is an iterative method?",o:["Gauss elimination","Gauss-Seidel","Cramer's rule","Matrix inversion"],a:1},
+  {n:151,t:"Database",q:"A primary key:",o:["Can have NULL","Uniquely identifies each row","Must be a foreign key","Can have duplicates"],a:1},
+  {n:152,t:"OS",q:"A page fault occurs when:",o:["A deadlock happens","Segmentation starts","Page is found in memory","Page is not found in memory"],a:3},
+  {n:153,t:"Networking",q:"OSI _______ Layer establishes, manages & terminates logical connections between applications.",o:["Transport","Network","Session","Data link"],a:2},
+  {n:154,t:"Digital Logic",q:"Which of the following is the simplified version of boolean function F = Y(X + XY)?",o:["X.Y","X.Y̅","X.Y (same)","X̅.Y"],a:0},
+  {n:155,t:"Theory of Comp.",q:"Which one is true for a DFA?",o:["DFA can have ε-transitions","DFA accepts all context-free languages","DFA accepts regular languages","DFA can have multiple transitions for the same input from a state"],a:2},
+  {n:156,t:"Networking",q:"_______ combines multiple signals over a single medium by assigning different time slots.",o:["FDM","TDM","WDM","SDM"],a:1},
+  {n:157,t:"Database",q:"Data _______ is the ability to modify a schema definition in a level without affecting the next higher level.",o:["Binding","Abstraction","Mapping","Independence"],a:3},
+  {n:158,t:"OOP",q:"In OOP, _______ is used to restrict access to certain details of an object.",o:["Inheritance","Polymorphism","Abstraction","Encapsulation"],a:3},
+  {n:159,t:"Architecture",q:"Garbage collection is required in SSD, because:",o:["SSD cells must be erased before being written","SSDs cannot store large files","SSDs do not support random access","It reduces read latency"],a:0},
+  {n:160,t:"AI / ML",q:"Which one is a supervised learning algorithm?",o:["K-means","Decision tree","Apriori","DBSCAN"],a:1},
+  {n:161,t:"Discrete Math",q:'Contrapositive of "If it rains, the home team wins":',o:["If the home team wins, then it rains","If the home team does not win, it does not rain","If it does not rain then the home team does not win","The home team wins whenever it rains"],a:1},
+  {n:162,t:"Theory of Comp.",q:"Pushdown automata (PDA) is equivalent in power to:",o:["Regular expressions","Context-free grammars","Context-sensitive grammars","Turing machines"],a:1},
+  {n:163,t:"Networking",q:"OSI model Data Link Layer's primary function:",o:["Packet routing","Error detection & correction","End-to-end communication","Data encryption"],a:1},
+  {n:164,t:"Database",q:"Which command can we use to save all transactions?",o:["SAVEPOINT","COMMIT","SAVE","ROLLBACK"],a:1},
+  {n:165,t:"Architecture",q:"Intel 8085 microprocessor is a _______ bit microprocessor.",o:["8","16","32","64"],a:0},
+  {n:166,t:"Database",q:'"Either all of its operations are executed or none." — this refers to:',o:["Consistency","Isolation","Atomicity","Durability"],a:2},
+  {n:167,t:"Architecture",q:"Interrupt-driven I/O is preferred over polling because it:",o:["Reduces CPU idle time","Is slower","Uses more memory","Requires fewer devices"],a:0},
+  {n:168,t:"C Programming",q:"What is the output of the following C code?\n#include<stdio.h>\nint main(){\n  int arr[5]={1,2,3,4,5};\n  int *p=(arr+2);\n  printf(\"%d\",p[-1]);\n  return 0;\n}",o:["2","3","Undefined behaviour","Compilation error"],a:0},
+  {n:169,t:"AI / ML",q:"In machine learning, supervised learning means:",o:["Training with unlabeled data","No training is required","Training with labeled data","Only reinforcement signals are used"],a:2},
+  {n:170,t:"Architecture",q:"A 16-bit address bus can address a maximum of _______ KB memory.",o:["16","32","64","128"],a:2},
+  {n:171,t:"Algorithms",q:"A* search algorithm is:",o:["Only complete but not optimal","Only optimal but not complete","Complete and optimal if the heuristic is admissible","Neither optimal nor complete"],a:2},
+  {n:172,t:"Data Structures",q:"To solve a problem using recursion we should use a:",o:["Linked list","Stack","Queue","Array"],a:1},
+  {n:173,t:"Algorithms",q:"_______ sort uses a divide and conquer approach?",o:["Insertion","Quick","Bubble","Selection"],a:1},
+  {n:174,t:"Digital Logic",q:"Which of the following is a combinational circuit?",o:["Counter","Flip flop","Multiplexor","Register"],a:2},
+  {n:175,t:"Digital Logic",q:"The number of binary strings of length 5 is:",o:["10","25","32","64"],a:2},
+  {n:176,t:"Digital Logic",q:"A half-adder circuit has:",o:["1 input, 2 outputs","2 inputs, 2 outputs","2 inputs, 1 output","3 inputs, 2 outputs"],a:1},
+  {n:177,t:"Database",q:"_______ reduces redundancy and improves integrity.",o:["Indexing","Normalization","Denormalization","Partitioning"],a:1},
+  {n:178,t:"C Programming",q:"Which one is correct to declare & initialize array in C?",o:["int arr(5) = {1,2,3,4,5}","int arr[5] = {1,2,3,4,5}","int arr() = 1,2,3,4,5","Array arr(5) = {1,2,3,4,5}"],a:1},
+  {n:179,t:"Graph Theory",q:"A complete graph of n vertices has _______ edges.",o:["n","n(n+1)/2","n(n-1)/2","n²"],a:2},
+  {n:180,t:"Algorithms",q:"_______ algorithm is used to find a shortest path in a positive weighted graph.",o:["Prim's","Kruskal's","Dijkstra's","DFS"],a:2},
+  {n:181,t:"Architecture",q:"The register SP in a microprocessor:",o:["Points to the first instruction","Points to the top of the stack","Holds the base address of the memory","Holds the I/O port address"],a:1},
+  {n:182,t:"OS",q:"Consider 3 processes (P1,P2,P3) and 2 resources (R1,R2). P1 holds R1 & requests R2, P2 holds R2 & requests R1. Minimum additional resource units needed to avoid deadlock (no preemption)?",o:["0 unit","1 unit of R1 or 1 unit of R2","2 units (1 of R1 & 1 of R2)","Not enough information"],a:1},
+  {n:183,t:"Networking",q:"UDP is a _______ protocol.",o:["Connection-less","Connection-oriented","Application layer","Network access layer"],a:0},
+  {n:184,t:"Algorithms",q:"Which of the following is NOT a characteristic of problems suited for Dynamic Programming?",o:["Overlapping subproblems","Optimal substructure","Independent subproblems","Repeated computation of subproblems"],a:2},
+  {n:185,t:"C Programming",q:"_______ is used in C to write a single character to a file.",o:["fputs()","fprintf()","fputc()","fwrite()"],a:2},
+  {n:186,t:"Digital Logic",q:"What is the hexadecimal value of 1111011011₂?",o:["3BD","3DB","3CB","3DA"],a:1},
+  {n:187,t:"Digital Logic",q:"The minimum number of NAND gates required to implement an OR gate is:",o:["1","2","3","4"],a:2},
+  {n:188,t:"Data Structures",q:"Which data structure allows insertion at one end and deletion at the other end?",o:["Stack","Tree","Queue","Graph"],a:2},
+  {n:189,t:"Networking",q:"Which of the following protocols is used together with HTTP in HTTPS?",o:["SHA","SSH","TLS","VPN"],a:2},
+  {n:190,t:"Database",q:"_______ refers to information about data.",o:["Hyper data","Tera data","Meta data","Big data"],a:2},
+  {n:191,t:"Architecture",q:"The Principle of Locality in memory systems helps to:",o:["Reduce CPU clock cycles","Improve cache performance","Increase instruction length","Reduce I/O latency"],a:1},
+  {n:192,t:"Software Engg",q:"Adaptive maintenance is required when:",o:["Errors are found in software","User requirements are stable","Documentation is missing","The environment such as OS, hardware changes"],a:3},
+  {n:193,t:"AI / ML",q:"Alpha-Beta pruning can:",o:["Change the final minimax result","Only reduce the number of nodes evaluated","Increase the depth of the tree","Increase the branching factor"],a:1},
+  {n:194,t:"Database",q:"Which one is true for a B+ tree?",o:["Internal nodes store only actual data","Leaf nodes store actual data","Does not maintain sorted data","Retrieval of data is slower"],a:1},
+  {n:195,t:"Database",q:"Which of the following will delete all records from the table WITH the table structure?",o:["ALTER","DELETE","DROP","TRUNCATE"],a:2},
+  {n:196,t:"Numerical",q:"Which of the following is a numerical method for eigenvalue problems?",o:["Gauss elimination","Power method","Newton interpolation","Trapezoidal rule"],a:1},
+  {n:197,t:"OS",q:"_______ replaces the page that has not been used for the longest time.",o:["MRU","LRU","FIFO","LIFO"],a:1},
+  {n:198,t:"Algorithms",q:"Greedy methods guarantee an optimal solution when:",o:["Overlapping subproblems exist","Problems have optimal substructure and greedy choice property","Divide and conquer can be applied","Subproblems are independent"],a:1},
+  {n:199,t:"Graph Theory",q:"For a connected acyclic graph with v vertices and e edges we have:",o:["v = e","v = e + 1","v = e + 2","v + 1 = e"],a:1},
+  {n:200,t:"C Programming",q:"Find the output of the following code:\n#include<stdio.h>\n#define MULTIPLY(a,b) a/b\nint main(){\n  int x=5, y=2, result;\n  result = MULTIPLY(y+x, y+x);\n  printf(\"%d\", result);\n  return 0;\n}",o:["1","7","9","Runtime error"],a:1},
+];
+
+let currentIdx = 0;
+let answers = new Array(questions.length).fill(null);
+
+function initDots() {
+  const row = document.getElementById('dots-row');
+  row.innerHTML = questions.map((_,i) =>
+    `<div class="dot" id="dot-${i}" onclick="goTo(${i})" title="Q${questions[i].n}"></div>`
+  ).join('');
+}
+
+function updateDots() {
+  questions.forEach((_,i) => {
+    const d = document.getElementById('dot-'+i);
+    d.className = 'dot';
+    if (i === currentIdx) d.classList.add('current');
+    else if (answers[i] !== null) d.classList.add(answers[i].correct ? 'correct' : 'wrong');
+  });
+}
+
+function render() {
+  const q = questions[currentIdx];
+  const ans = answers[currentIdx];
+  const done = ans !== null;
+
+  document.getElementById('q-num-tag').textContent = '#' + q.n;
+  document.getElementById('q-topic-tag').textContent = q.t;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-counter').textContent = (currentIdx+1) + ' of ' + questions.length;
+
+  // Options
+  document.getElementById('options-container').innerHTML = q.o.map((opt,i) => {
+    let cls = '';
+    if (done) {
+      if (i === q.a) cls = 'correct-opt';
+      else if (!ans.correct && i === ans.chosen) cls = 'wrong-opt';
+    }
+    return `<button class="opt-btn ${cls}" ${done?'disabled':''} onclick="pick(${i})">
+      <div class="opt-key">${L[i]}</div><span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  // Verdict
+  const vRow = document.getElementById('verdict-row');
+  if (done) {
+    vRow.style.display = 'block';
+    const vBox = document.getElementById('verdict-box');
+    if (ans.correct) {
+      vBox.className = 'verdict-box v-correct';
+      document.getElementById('verdict-icon').textContent = '✓';
+      document.getElementById('verdict-msg').textContent = 'Correct! Well done.';
+    } else {
+      vBox.className = 'verdict-box v-wrong';
+      document.getElementById('verdict-icon').textContent = '✗';
+      document.getElementById('verdict-msg').textContent = `Wrong! Correct: ${L[q.a]}) ${q.o[q.a]}`;
+    }
+  } else {
+    vRow.style.display = 'none';
+  }
+
+  // Nav
+  document.getElementById('btn-prev').disabled = currentIdx === 0;
+  document.getElementById('btn-next').textContent =
+    currentIdx === questions.length-1 ? 'Finish 🏁' : 'Next →';
+
+  // Stats
+  const correct = answers.filter(a=>a&&a.correct).length;
+  const wrong = answers.filter(a=>a&&!a.correct).length;
+  document.getElementById('hdr-q').textContent = (currentIdx+1)+'/100';
+  document.getElementById('hdr-correct').textContent = correct;
+  document.getElementById('hdr-wrong').textContent = wrong;
+  document.getElementById('prog-fill').style.width = ((currentIdx+1)/questions.length*100)+'%';
+  document.getElementById('prog-label').textContent = (currentIdx+1)+' / '+questions.length;
+
+  updateDots();
+}
+
+function pick(chosen) {
+  if (answers[currentIdx] !== null) return;
+  const q = questions[currentIdx];
+  answers[currentIdx] = { chosen, correct: chosen === q.a };
+  render();
+}
+
+function nextQuestion() {
+  if (currentIdx === questions.length-1) { showResults(); return; }
+  currentIdx++;
+  animCard();
+}
+
+function goTo(i) {
+  if (i < 0 || i >= questions.length) return;
+  currentIdx = i;
+  animCard();
+}
+
+function animCard() {
+  const card = document.getElementById('quiz-card');
+  card.style.animation = 'none';
+  requestAnimationFrame(() => {
+    card.style.animation = 'fadeSlide 0.32s ease';
+    render();
+  });
+}
+
+function showResults() {
+  const correct = answers.filter(a=>a&&a.correct).length;
+  const wrong = answers.filter(a=>a&&!a.correct).length;
+  const skip = answers.filter(a=>a===null).length;
+  const pct = Math.round(correct/questions.length*100);
+  document.getElementById('r-pct').textContent = pct+'%';
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-skip').textContent = skip;
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-label').textContent = '100 / 100';
+}
+
+function restartQuiz() {
+  currentIdx = 0;
+  answers = new Array(questions.length).fill(null);
+  document.getElementById('quiz-card').style.display = '';
+  document.getElementById('results-screen').style.display = 'none';
+  render();
+  window.scrollTo(0,0);
+}
+
+function confirmRestart() {
+  if (confirm('Restart quiz? All answers will be cleared.')) restartQuiz();
+}
+
+// Init
+initDots();
+render();
+</script>
+</body>
+</html>
